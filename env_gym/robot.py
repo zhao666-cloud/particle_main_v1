@@ -338,24 +338,16 @@ class UR5Robotiq85(RobotBase):
         rgb_list = []
         seg_list = []
         intrinsic =self.calc_intrinsic()
-        for theta in range(0,90,step):
-            x_ = x + r*cos(np.radians(theta+0.01))
-            z_ = z + r*sin(np.radians(theta+0.01))
-            m_r,m_t = self.calc_extrinsic([x, y, z], [x_, y, z_],[0,0,1])
+        for theta in range(0,360,step):
+            x_ = x + r*cos(np.radians(theta))
+            y_ = y + r*sin(np.radians(theta))
+            m_r,m_t = self.calc_extrinsic([x, y, z], [x_, y_, 0.18],[0,0,1])
             m_r_list.append(m_r)
             m_t_list.append(m_t)
-            rgb,seg = self.get_image([x_,y,z_],[x,y,z])
+            rgb,seg = self.get_image([x_, y_, 0.18],[x,y,z])
             rgb_list.append(rgb)
             seg_list.append(seg)
-        for theta in range(0,90,step):
-            y_ = y + r * cos(np.radians(theta+0.01))
-            z_ = z + r * sin(np.radians(theta+0.01))
-            m_r,m_t = self.calc_extrinsic([x,y,z],[x,y_,z_],[0,0,1])
-            m_r_list.append(m_r)
-            m_t_list.append(m_t)
-            rgb,seg = self.get_image([x,y_,z_],[x,y,z])
-            rgb_list.append(rgb)
-            seg_list.append(seg)
+
 
         return rgb_list,seg_list,m_r_list,m_t_list,intrinsic
 
