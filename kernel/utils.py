@@ -25,12 +25,18 @@ def get_position(mask,bound_x,bound_y):
     M = cv2.getRotationMatrix2D((128,128),45,1.0)
     roate_mask = cv2.warpAffine(roate_mask,M,(256,256))*255
     binary = cv2.threshold(roate_mask,0,255,cv2.THRESH_BINARY)[1]
-    contours,hierarchy = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    kernel = np.ones((10, 10), np.uint8)
+    close = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+    cv2.imshow('mm',close)
+    cv2.waitKey()
+    contours,hierarchy = cv2.findContours(close, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    print(contours)
     M = cv2.moments(contours[0])
     center_x = int(M['m10']/M['m00'])
     center_y = int(M['m01']/M['m00'])
     position_x = bound_x * center_x/255
     position_y = bound_y * center_y/255
+    print(position_x,position_y)
     #TODO mutil objects
     return position_x,position_y
 

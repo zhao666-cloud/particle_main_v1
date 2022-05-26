@@ -197,41 +197,55 @@ class UR5Robotiq85(RobotBase):
         # Control the mimic gripper joint(s)
         p.setJointMotorControl2(self.id, self.mimic_parent_id, p.POSITION_CONTROL, targetPosition=open_angle,
                                 force=self.joints[self.mimic_parent_id].maxForce, maxVelocity=self.joints[self.mimic_parent_id].maxVelocity)
-
-    def load_obj(self):
-        obj_list = os.listdir(f'{PATH}/{self.args.objects_dir}')
+    def load_obj(self,scale = 1.0):
+        obj_dirs = os.listdir(f'{PATH}/{self.args.objects_dir}')
         self.obj_list = []
         self.obj_id_list = []
-        for obj_name in obj_list:
-            if "_vhacd" not in obj_name:
-                self.obj_list.append(obj_name)
+        for obj_dir in obj_dirs:
+            if "_vhacd" not in obj_dir:
+                self.obj_list.append(obj_dir)
         self.obj_list.sort()
         list = np.random.choice(len(self.obj_list), self.args.num_obj, replace=False)#num
         obj_pos = np.random.random(2) * 0.01 + 0.5
         obj_pos = np.concatenate((obj_pos,[0.3]))
         obj_ori = p.getQuaternionFromEuler([90,90,90])
         for i in list:
-            obj_path = f"{PATH}/{self.args.objects_dir}/{self.obj_list[i]}"#{self.obj_list[i]}
+            obj_path = f"{PATH}/{self.args.objects_dir}/{self.obj_list[i]}/textured.obj"#{self.obj_list[i]}
             vhacd_obj_path = obj_path.replace(".obj","_vhacd.obj")
             if not os.path.exists(vhacd_obj_path):
                 p.vhacd(obj_path, vhacd_obj_path, "vhacd_log.txt",alpha=0.04, resolution=100000)
-            visualShapeId = p.createVisualShape(shapeType=p.GEOM_MESH,
-                                                fileName=obj_path,
-                                                meshScale=[1.5,1.5,1.5])
             collisionShapedId = p.createCollisionShape(shapeType=p.GEOM_MESH,
                                                        fileName=vhacd_obj_path,
-                                                       meshScale=[1.5,1.5,1.5])
+                                                       meshScale=[scale for i in range(3)])
             self.obj_id = p.createMultiBody(baseMass=1,
                               baseCollisionShapeIndex = collisionShapedId,
-                              baseVisualShapeIndex=visualShapeId,
-                              useMaximalCoordinates=True,
+                              basePosition=obj_pos,
+                              baseOrientation=obj_ori)
+            for _ in range(2000):
+                p.stepSimulation()
+            box = np.array(p.getAABB(self.obj_id))
+            p.removeBody(self.obj_id)
+            for _ in range(2000):
+                p.stepSimulation()
+            # make sure object is not too big
+            diagnal = np.linalg.norm(box[1] - box[0])
+            scale = pow(np.tan(2 * diagnal - np.pi / 2 - 0.5), -1) + 1
+            visualShapeId = p.createVisualShape(shapeType=p.GEOM_MESH,
+                                                fileName=obj_path,
+                                                meshScale=[scale for i in range(3)])
+            collisionShapedId = p.createCollisionShape(shapeType=p.GEOM_MESH,
+                                                       fileName=vhacd_obj_path,
+                                                       meshScale=[scale for i in range(3)])
+            self.obj_id = p.createMultiBody(baseMass=1,
+                              baseCollisionShapeIndex = collisionShapedId,
+                              baseVisualShapeIndex= visualShapeId,
                               basePosition=obj_pos,
                               baseOrientation=obj_ori)
             self.obj_id_list.append(self.obj_id)
-            p.changeVisualShape(self.obj_id, -1, rgbaColor=[1, 0.1, 0.1, 1])
-            for _ in range(120):
+            for _ in range(2000):
                 p.stepSimulation()
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
+
     def show_particle(self,particles,rgbaColor=[0,170,20,1]):
         show_points = particles.clone()
         show_points[:, 0] += 0.2
