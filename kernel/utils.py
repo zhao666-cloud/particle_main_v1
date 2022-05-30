@@ -30,7 +30,6 @@ def get_position(mask,bound_x,bound_y):
     cv2.imshow('mm',close)
     cv2.waitKey()
     contours,hierarchy = cv2.findContours(close, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    print(contours)
     M = cv2.moments(contours[0])
     center_x = int(M['m10']/M['m00'])
     center_y = int(M['m01']/M['m00'])

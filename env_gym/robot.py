@@ -341,10 +341,10 @@ class UR5Robotiq85(RobotBase):
         for theta in range(0,360,step):
             x_ = x + r*cos(np.radians(theta))
             y_ = y + r*sin(np.radians(theta))
-            m_r,m_t = self.calc_extrinsic([x, y, z], [x_, y_, 0.18],[0,0,1])
+            m_r,m_t = self.calc_extrinsic([x, y, z], [x_, y_, r],[0,0,1])
             m_r_list.append(m_r)
             m_t_list.append(m_t)
-            rgb,seg = self.get_image([x_, y_, 0.18],[x,y,z])
+            rgb,seg = self.get_image([x_, y_, r],[x,y,z])
             rgb_list.append(rgb)
             seg_list.append(seg)
 
