@@ -264,6 +264,36 @@ class UR5Robotiq85(RobotBase):
         p.removeAllUserDebugItems()
         time.sleep(0.1)
         return particle_id_list
+    def show_part_particle(self,particles,seg_sign,rgbaColor=[0,170,20,1]):
+        color_bar = {
+            0 : [230/255,95/255,84/255,1],
+            1 : [155/255,101/255,240/255,1],
+            2 : [102/255,203/255,217/255,1],
+            3 : [140/255,240/255,101/255,1],
+            4 : [230/255,193/255,96/255,1]
+        }
+        show_points = particles.clone()
+        unique_sign = np.unique(seg_sign)
+        color_sign = {}
+        for i,sign in enumerate(unique_sign):
+            color_sign[sign] = color_bar[i]
+        show_points[:, 0] += 0.2
+        show_points[:, 1] += 0.2
+        show_points[:, 2] += 0.1
+        p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
+        visualShapedId = p.createVisualShape(shapeType=p.GEOM_SPHERE,rgbaColor=rgbaColor,radius=0.001)
+        particle_id_list = []
+        for i,points in enumerate(show_points):
+            obj_id = p.createMultiBody(baseMass=0,
+                                       baseCollisionShapeIndex=-1,
+                                       baseVisualShapeIndex=visualShapedId,
+                                       basePosition=points[:3])
+            particle_id_list.append(obj_id)
+            p.changeVisualShape(obj_id,-1,rgbaColor = color_sign[seg_sign[i]])
+        p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,1)
+        p.removeAllUserDebugItems()
+        time.sleep(0.1)
+        return particle_id_list
     def hide_particle(self,particle_id_list):
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
         for i in particle_id_list:
