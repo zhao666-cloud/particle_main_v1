@@ -27,8 +27,6 @@ def get_position(mask,bound_x,bound_y):
     binary = cv2.threshold(roate_mask,0,255,cv2.THRESH_BINARY)[1]
     kernel = np.ones((10, 10), np.uint8)
     close = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
-    cv2.imshow('mm',close)
-    cv2.waitKey()
     contours,hierarchy = cv2.findContours(close, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     M = cv2.moments(contours[0])
     center_x = int(M['m10']/M['m00'])

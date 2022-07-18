@@ -207,10 +207,10 @@ class UR5Robotiq85(RobotBase):
         self.obj_list.sort()
         list = np.random.choice(len(self.obj_list), self.args.num_obj, replace=False)#num
         obj_pos = np.random.random(2) * 0.01 + 0.5
-        obj_pos = np.concatenate((obj_pos,[0.3]))
-        obj_ori = p.getQuaternionFromEuler([90,90,90])
+        obj_pos = np.concatenate((obj_pos,[0.0]))
+        obj_ori = p.getQuaternionFromEuler([0,0,0])
         for i in list:
-            obj_path = f"{PATH}/{self.args.objects_dir}/{self.obj_list[i]}/textured.obj"#{self.obj_list[i]}
+            obj_path = f"{PATH}/{self.args.objects_dir}/007/textured.obj"#{self.obj_list[i]}
             vhacd_obj_path = obj_path.replace(".obj","_vhacd.obj")
             if not os.path.exists(vhacd_obj_path):
                 p.vhacd(obj_path, vhacd_obj_path, "vhacd_log.txt",alpha=0.04, resolution=100000)
@@ -250,7 +250,7 @@ class UR5Robotiq85(RobotBase):
         show_points = particles.clone()
         show_points[:, 0] += 0.2
         show_points[:, 1] += 0.2
-        show_points[:, 2] += 0.1
+        #show_points[:, 2] += 0.1
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
         visualShapedId = p.createVisualShape(shapeType=p.GEOM_SPHERE,rgbaColor=rgbaColor,radius=0.001)
         particle_id_list = []

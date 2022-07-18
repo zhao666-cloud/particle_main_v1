@@ -19,7 +19,7 @@ top_mask = env.get_top_iamge(np.array([0.5,0.5,0.001]))
 x0,y0 = get_position(top_mask,1,1)
 #reconstruction
 rgb,seg,m_r_list,m_t_list,intrinsic = env.get_viode(x0,y0)
-save_data(rgb,seg,m_r_list,m_t_list,intrinsic)
+#save_data(rgb,seg,m_r_list,m_t_list,intrinsic)
 particles = generate_point_cloud(env,m_r_list,m_t_list,intrinsic,seg,rgb,x0,y0)
 env.show_particle(particles)
 while 1:
