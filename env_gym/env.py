@@ -10,7 +10,7 @@ class grasp(core.Env,UR5Robotiq85):
 
     SIMULATION_STEP_DELAY = 1/ 240.
 #TODO GUI
-    def __init__(self,GUI=True):
+    def __init__(self,GUI=True,object=True):
         super(UR5Robotiq85,self).__init__([0,0,0],[0,0,0])
         #self.robot = robot
         self.GUI = GUI
@@ -26,7 +26,8 @@ class grasp(core.Env,UR5Robotiq85):
         p.resetDebugVisualizerCamera(1.5, 150, -30, (0.1, 0.1, 0))
         self.planeID = p.loadURDF("plane.urdf")
         self.load()
-        self.load_obj()
+        if object:
+            self.load_obj()
 
 
     def step_simulation(self):

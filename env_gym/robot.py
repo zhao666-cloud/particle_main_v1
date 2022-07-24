@@ -207,10 +207,10 @@ class UR5Robotiq85(RobotBase):
         self.obj_list.sort()
         list = np.random.choice(len(self.obj_list), self.args.num_obj, replace=False)#num
         obj_pos = np.random.random(2) * 0.01 + 0.5
-        obj_pos = np.concatenate((obj_pos,[0.0]))
+        obj_pos = np.concatenate((obj_pos,[0]))
         obj_ori = p.getQuaternionFromEuler([0,0,0])
         for i in list:
-            obj_path = f"{PATH}/{self.args.objects_dir}/007/textured.obj"#{self.obj_list[i]}
+            obj_path = f"{PATH}/{self.args.objects_dir}/013/textured.obj"#{self.obj_list[i]}
             vhacd_obj_path = obj_path.replace(".obj","_vhacd.obj")
             if not os.path.exists(vhacd_obj_path):
                 p.vhacd(obj_path, vhacd_obj_path, "vhacd_log.txt",alpha=0.04, resolution=100000)
@@ -247,7 +247,10 @@ class UR5Robotiq85(RobotBase):
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
 
     def show_particle(self,particles,rgbaColor=[0,170,20,1]):
-        show_points = particles.clone()
+        try:
+            show_points = particles.detach().cpu().numpy().copy()
+        except:
+            show_points = particles.copy()
         show_points[:, 0] += 0.2
         show_points[:, 1] += 0.2
         #show_points[:, 2] += 0.1
@@ -264,6 +267,7 @@ class UR5Robotiq85(RobotBase):
         p.removeAllUserDebugItems()
         time.sleep(0.1)
         return particle_id_list
+
     def show_part_particle(self,particles,seg_sign,rgbaColor=[0,170,20,1]):
         color_bar = {
             0 : [230/255,95/255,84/255,1],
@@ -272,14 +276,17 @@ class UR5Robotiq85(RobotBase):
             3 : [140/255,240/255,101/255,1],
             4 : [230/255,193/255,96/255,1]
         }
-        show_points = particles.clone()
+        try:
+            show_points = particles.detach().cpu().numpy().copy()
+        except:
+            show_points = particles.copy()
         unique_sign = np.unique(seg_sign)
         color_sign = {}
         for i,sign in enumerate(unique_sign):
             color_sign[sign] = color_bar[i]
-        show_points[:, 0] += 0.2
-        show_points[:, 1] += 0.2
-        show_points[:, 2] += 0.1
+        #show_points[:, 0] += 0.2
+        #show_points[:, 1] += 0.2
+        #show_points[:, 2] += 0.1
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
         visualShapedId = p.createVisualShape(shapeType=p.GEOM_SPHERE,rgbaColor=rgbaColor,radius=0.001)
         particle_id_list = []
@@ -294,11 +301,13 @@ class UR5Robotiq85(RobotBase):
         p.removeAllUserDebugItems()
         time.sleep(0.1)
         return particle_id_list
+
     def hide_particle(self,particle_id_list):
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
         for i in particle_id_list:
             p.removeBody(i)
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,1)
+
     def get_image(self,camera_pos,cam_target_pos):
         view_matrix = p.computeViewMatrix(camera_pos, cam_target_pos,Up)
         projection_matrix = p.computeProjectionMatrixFOV(fov,aspect,nearPlane,farPlane)
@@ -309,6 +318,7 @@ class UR5Robotiq85(RobotBase):
         seg = ((img[4]==1)^(img[4])).reshape(self.pixelHeight,self.pixelWidth).astype(np.float32)
         seg = ((seg!=-1)&(seg!=0)).astype(np.float32)
         return rgb, seg
+
     def get_top_iamge(self,center):
         cam_target_pos = center.copy()
         center[2] += 0.866
@@ -359,8 +369,9 @@ class UR5Robotiq85(RobotBase):
         intrinsic[0, 1] = 0  # skew
         intrinsic[2, 2] = 1
         return intrinsic
+
     def get_viode(self,x0,y0,step=4):
-        r = 0.18
+        r = 0.15
         base = [x0,y0,0.001]
         x,y,z = base
         m_r_list = []
@@ -377,8 +388,6 @@ class UR5Robotiq85(RobotBase):
             rgb,seg = self.get_image([x_, y_, r],[x,y,z])
             rgb_list.append(rgb)
             seg_list.append(seg)
-
-
         return rgb_list,seg_list,m_r_list,m_t_list,intrinsic
 
 
