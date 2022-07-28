@@ -210,7 +210,7 @@ class UR5Robotiq85(RobotBase):
         obj_pos = np.concatenate((obj_pos,[0]))
         obj_ori = p.getQuaternionFromEuler([0,0,0])
         for i in list:
-            obj_path = f"{PATH}/{self.args.objects_dir}/013/textured.obj"#{self.obj_list[i]}
+            obj_path = f"{PATH}/{self.args.objects_dir}/025/textured.obj"#{self.obj_list[i]}
             vhacd_obj_path = obj_path.replace(".obj","_vhacd.obj")
             if not os.path.exists(vhacd_obj_path):
                 p.vhacd(obj_path, vhacd_obj_path, "vhacd_log.txt",alpha=0.04, resolution=100000)
@@ -284,8 +284,8 @@ class UR5Robotiq85(RobotBase):
         color_sign = {}
         for i,sign in enumerate(unique_sign):
             color_sign[sign] = color_bar[i]
-        #show_points[:, 0] += 0.2
-        #show_points[:, 1] += 0.2
+        show_points[:, 0] += 0.2
+        show_points[:, 1] += 0.2
         #show_points[:, 2] += 0.1
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
         visualShapedId = p.createVisualShape(shapeType=p.GEOM_SPHERE,rgbaColor=rgbaColor,radius=0.001)
@@ -370,8 +370,8 @@ class UR5Robotiq85(RobotBase):
         intrinsic[2, 2] = 1
         return intrinsic
 
-    def get_viode(self,x0,y0,step=4):
-        r = 0.15
+    def get_viode(self,x0,y0,step=2):
+        r = 0.12
         base = [x0,y0,0.001]
         x,y,z = base
         m_r_list = []
