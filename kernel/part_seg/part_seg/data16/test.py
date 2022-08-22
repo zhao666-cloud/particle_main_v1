@@ -5,13 +5,58 @@ import gym
 import torch
 import time
 from scipy.spatial.transform import Rotation as R
-def sample(k):
-    r = np.random.uniform(0.9*k,k)
-    theta = np.random.uniform(0,2*np.pi)
-    y = r*np.sin(theta)
-    z = np.random.uniform(-0.01,0.02)
-    x = r * np.cos(theta) + np.sqrt((1-z**2/0.03**2)*0.01**2)
-    return [x,y,z]
+def sample(minp,maxp):
+    dis = maxp - minp
+    particles = []
+    y1 = np.arange(-dis[1]/2,dis[1]/2,dis[1]/10)
+    z1 = np.arange(-dis[2]/2,dis[2]/2,dis[1]/10)
+    yy1, zz1 = np.meshgrid(y1, z1)
+    xx1 = -np.ones_like(yy1)*dis[0]/2
+    for i in range(xx1.shape[0]):
+        for j in range(xx1.shape[1]):
+            particles.append([xx1[i,j],yy1[i,j],zz1[i,j]])
+
+    x2 = np.arange(-dis[0]/2,dis[0]/2,dis[0]/10)
+    y2 = np.arange(-dis[1]/2,dis[1]/2,dis[0]/10)
+    yy2, xx2 = np.meshgrid(y2, x2)
+    zz2 = -np.ones_like(yy2)*dis[2]/2
+    for i in range(yy2.shape[0]):
+        for j in range(yy2.shape[1]):
+            particles.append([xx2[i,j],yy2[i,j],zz2[i,j]])
+
+    y1 = np.arange(-dis[1]/2,dis[1]/2,dis[1]/11)
+    z1 = np.arange(-dis[2]/2,dis[2]/2,dis[1]/11)
+    yy1, zz1 = np.meshgrid(y1, z1)
+    xx1 = np.ones_like(yy1)*dis[0]/2
+    for i in range(xx1.shape[0]):
+        for j in range(xx1.shape[1]):
+            particles.append([xx1[i,j],yy1[i,j],zz1[i,j]])
+
+    x2 = np.arange(-dis[0]/2,dis[0]/2,dis[0]/10)
+    y2 = np.arange(-dis[1]/2,dis[1]/2,dis[0]/10)
+    yy2, xx2 = np.meshgrid(y2, x2)
+    zz2 = np.ones_like(yy2)*dis[2]/2
+    for i in range(yy2.shape[0]):
+        for j in range(yy2.shape[1]):
+            particles.append([xx2[i,j],yy2[i,j],zz2[i,j]])
+
+    x3 = np.arange(-dis[0]/2,dis[0]/2,dis[0]/10)
+    z3 = np.arange(-dis[2]/2,dis[2]/2,dis[0]/10)
+    xx3 ,zz3 = np.meshgrid(x3, z3)
+    yy3 = -np.ones_like(xx3)*dis[1]/2
+    for i in range(xx3.shape[0]):
+        for j in range(xx3.shape[1]):
+            particles.append([xx3[i,j],yy3[i,j],zz3[i,j]])
+
+    x3 = np.arange(-dis[0]/2,dis[0]/2,dis[0]/10)
+    z3 = np.arange(-dis[2]/2,dis[2]/2,dis[0]/10)
+    xx3 ,zz3 = np.meshgrid(x3, z3)
+    yy3 = np.ones_like(xx3)*dis[1]/2
+    for i in range(xx3.shape[0]):
+        for j in range(xx3.shape[1]):
+            particles.append([xx3[i,j],yy3[i,j],zz3[i,j]])
+
+    return np.array(particles)
 def flat_sample(k1,k2):
     a = np.random.uniform(0.9*k1,k1)
     b = np.random.uniform(0.9*k2,k2)
@@ -22,7 +67,7 @@ def flat_sample(k1,k2):
     return [x,y,z]
 env = gym.make('env_gym:ur5_env-v0', object=0)
 obs = env.reset()
-s = 4
+s = 0
 for i in [9]:
     data = np.loadtxt(f'{i}/points4.txt')
     points = data[:,:3]
@@ -32,50 +77,37 @@ for i in [9]:
         continue
     print(i)
     points = points[mask]
-    particles = []
     mean = points.mean(axis=0)
-    left_points = []
-    right_points = []
-    for point in points:
-        if point[0] < mean[0]:
-            left_points.append(point)
-        else:
-            right_points.append(point)
-    left_points = np.array(left_points)
-    right_points = np.array(right_points)
-    max_y = np.sort(left_points[:,1])[-15:].sum()/15
-    min_y = np.sort(left_points[:,1])[:15].sum()/15
-    max_z = np.sort(right_points[:,2])[-15:].sum()/25
-    min_z = np.sort(right_points[:,2])[:15].sum()/25
-    # points = points - mean
-    left_mean = right_points.mean(axis=0)
-    left_points = right_points - left_mean
-    k1 = (max_y - min_y)/2
-    k2 = (max_z - min_z)/2
-    ori = [0,0,-90]
+    max_x = np.sort(points[:,0])[-15:].sum()/15
+    min_x = np.sort(points[:,0])[:15].sum()/15
+    max_y = np.sort(points[:,1])[-15:].sum()/15
+    min_y = np.sort(points[:,1])[:15].sum()/15
+    max_z = np.sort(points[:,2])[-15:].sum()/15
+    min_z = np.sort(points[:,2])[:15].sum()/15
+    maxp = np.array([max_x,max_y,max_z])
+    minp = np.array([min_x,min_y,min_z])
+    points = points - mean
+    ori = [0,0,0]
     ori_matrix = R.from_euler('zyx',ori,degrees=True).as_matrix()
-    new_points = np.dot(ori_matrix,left_points.T).T
-    for _ in range(400):
-        p = sample(k2)
-        particles.append(p)
-    particles = np.array(particles).reshape(-1,3)
-    particles[:,0] = particles[:,0] + 0.0025
-    temp_points = torch.tensor(new_points).unsqueeze(0).repeat(400,1,1).cuda()
+    new_points = np.dot(ori_matrix,points.T).T
+    particles = sample(minp,maxp)
+    print(particles.shape)
+    temp_points = torch.tensor(new_points).unsqueeze(0).repeat(particles.shape[0],1,1).cuda()
     temp_particles = torch.tensor(particles).unsqueeze(1).repeat(1,temp_points.shape[1],1).cuda()
-    temp = np.argsort(np.array(torch.pow(temp_points - temp_particles,2).cpu()).sum(axis=2))[:,:2].reshape(-1,)
+    temp = np.argsort(np.array(torch.pow(temp_points - temp_particles,2).cpu()).sum(axis=2))[:,0].reshape(-1,)
     print(len(set(temp)))
     if len(set(temp)) < int(new_points.shape[0]/10):
-        a = range(400)
+        a = range(particles.shape[0])
         append = np.random.choice(a,int(new_points.shape[0]/10)-len(set(temp)),replace=False)
         new_points = np.concatenate((new_points,particles[append]),axis=0)
         show = np.zeros((new_points.shape[0]))
-        show[temp]=s
-        show[-append.shape[0]:] = s
+        show[temp]=10
+        show[-append.shape[0]:] = 10
     else:
         show = np.zeros((new_points.shape[0]))
-        show[temp]=s
+        show[temp]=10
     new_data = np.concatenate((new_points,show.reshape(-1,1)),axis=1)
-    #np.savetxt(f'data/9/points.txt',new_data)
+    np.savetxt(f'data/19/points.txt',new_data)
     #env.show_particle(particles)
     res = env.show_part_particle(new_points,show)
     #time.sleep(5)
