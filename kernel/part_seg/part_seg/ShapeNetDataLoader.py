@@ -60,7 +60,7 @@ class PartNormalDataset(Dataset):
                 point_set = data[:, 0:3]
             else:
                 point_set = data[:, 0:6]
-            seg = data[:, -1].astype(np.int32)
+            seg = data[:, -2:].astype(np.int32)
             if len(self.cache) < self.cache_size:
                 self.cache[index] = (point_set, seg)
         point_set[:, 0:3] = pc_normalize(point_set[:, 0:3])

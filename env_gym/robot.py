@@ -210,7 +210,7 @@ class UR5Robotiq85(RobotBase):
         obj_pos = np.concatenate((obj_pos,[0]))
         obj_ori = p.getQuaternionFromEuler([0,0,0])
         for i in list:
-            obj_path = f"{PATH}/{self.args.objects_dir}/025/textured.obj"#{self.obj_list[i]}
+            obj_path = f"{PATH}/{self.args.objects_dir}/008/textured.obj"#{self.obj_list[i]}
             vhacd_obj_path = obj_path.replace(".obj","_vhacd.obj")
             if not os.path.exists(vhacd_obj_path):
                 p.vhacd(obj_path, vhacd_obj_path, "vhacd_log.txt",alpha=0.04, resolution=100000)
@@ -253,9 +253,9 @@ class UR5Robotiq85(RobotBase):
             show_points = particles.copy()
         show_points[:, 0] += 0.2
         show_points[:, 1] += 0.2
-        #show_points[:, 2] += 0.1
+        show_points[:, 2] += 0.1
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
-        visualShapedId = p.createVisualShape(shapeType=p.GEOM_SPHERE,rgbaColor=rgbaColor,radius=0.001)
+        visualShapedId = p.createVisualShape(shapeType=p.GEOM_SPHERE,rgbaColor=rgbaColor,radius=0.002)
         particle_id_list = []
         for points in show_points:
             obj_id = p.createMultiBody(baseMass=0,
@@ -286,7 +286,7 @@ class UR5Robotiq85(RobotBase):
             color_sign[sign] = color_bar[i]
         show_points[:, 0] += 0.2
         show_points[:, 1] += 0.2
-        #show_points[:, 2] += 0.1
+        show_points[:, 2] += 0.1
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
         visualShapedId = p.createVisualShape(shapeType=p.GEOM_SPHERE,rgbaColor=rgbaColor,radius=0.001)
         particle_id_list = []
@@ -298,7 +298,6 @@ class UR5Robotiq85(RobotBase):
             particle_id_list.append(obj_id)
             p.changeVisualShape(obj_id,-1,rgbaColor = color_sign[seg_sign[i]])
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,1)
-        p.removeAllUserDebugItems()
         time.sleep(0.1)
         return particle_id_list
 
@@ -389,6 +388,12 @@ class UR5Robotiq85(RobotBase):
             rgb_list.append(rgb)
             seg_list.append(seg)
         return rgb_list,seg_list,m_r_list,m_t_list,intrinsic
+
+    def draw_line(self,pos1,pos2):
+        p.addUserDebugLine(pos1, pos2, [1, 0, 0], 2, 0)
+
+
+
 
 
 

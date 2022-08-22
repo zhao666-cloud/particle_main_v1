@@ -29,7 +29,7 @@ class get_model(nn.Module):
         self.convs1 = torch.nn.Conv1d(4928, 256, 1)
         self.convs2 = torch.nn.Conv1d(256, 256, 1)
         self.convs3 = torch.nn.Conv1d(256, 128, 1)
-        self.convs4 = torch.nn.Conv1d(128, part_num, 1)
+        self.convs4 = torch.nn.Conv1d(128, part_num+4, 1)
         self.bns1 = nn.BatchNorm1d(256)
         self.bns2 = nn.BatchNorm1d(256)
         self.bns3 = nn.BatchNorm1d(128)
@@ -68,8 +68,8 @@ class get_model(nn.Module):
         net = F.relu(self.bns3(self.convs3(net)))
         net = self.convs4(net)
         net = net.transpose(2, 1).contiguous()
-        net = F.log_softmax(net.view(-1, self.part_num), dim=-1)
-        net = net.view(B, N, self.part_num) # [B, N, 50]
+        net = F.log_softmax(net.view(-1, self.part_num+4), dim=-1)
+        net = net.view(B, N, self.part_num+4) # [B, N, 50+4]
 
         return net, trans_feat
 
