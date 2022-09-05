@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument('--model', type=str, default='pointnet_part_seg', help='model name')
     parser.add_argument('--gpu', type=str, default='0', help='specify GPU devices')
     parser.add_argument('--npoints',type=int,default=2048,help='point Number')
-    parser.add_argument('--epoch', default=251, type=int, help='epoch to run')
+    parser.add_argument('--epoch', default=512, type=int, help='epoch to run')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='initial learning rate')
     parser.add_argument('--optimizer', type=str, default='Adam', help='Adam or SGD')
     parser.add_argument('--decay_rate', type=float, default=1e-4, help='weight decay')
@@ -43,9 +43,9 @@ def main(args):
 
     os.environ["CUDA_VISIBLE_DEVICES"] =args.gpu
 
-    root = 'data16'
+    root = 'data'
     TRAIN_DATASET = PartNormalDataset(root=root,npoints=args.npoints,normal_channel=args.normal)
-    trainDataLoader = torch.utils.data.DataLoader(TRAIN_DATASET,batch_size=args.batch_size,shuffle=True,num_workers=10)
+    trainDataLoader = torch.utils.data.DataLoader(TRAIN_DATASET,batch_size=args.batch_size,shuffle=True,num_workers=10,drop_last=True)
     num_classes = 4
     num_part = 7
 

@@ -251,11 +251,11 @@ class UR5Robotiq85(RobotBase):
             show_points = particles.detach().cpu().numpy().copy()
         except:
             show_points = particles.copy()
-        show_points[:, 0] += 0.2
-        show_points[:, 1] += 0.2
-        show_points[:, 2] += 0.1
+        # show_points[:, 0] += 0.2
+        # show_points[:, 1] += 0.2
+        #show_points[:, 2] += 0.1
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
-        visualShapedId = p.createVisualShape(shapeType=p.GEOM_SPHERE,rgbaColor=rgbaColor,radius=0.002)
+        visualShapedId = p.createVisualShape(shapeType=p.GEOM_SPHERE,rgbaColor=rgbaColor,radius=0.001)
         particle_id_list = []
         for points in show_points:
             obj_id = p.createMultiBody(baseMass=0,
@@ -284,9 +284,9 @@ class UR5Robotiq85(RobotBase):
         color_sign = {}
         for i,sign in enumerate(unique_sign):
             color_sign[sign] = color_bar[i]
-        show_points[:, 0] += 0.2
-        show_points[:, 1] += 0.2
-        show_points[:, 2] += 0.1
+        # show_points[:, 0] += 0.2
+        # show_points[:, 1] += 0.2
+        #show_points[:, 2] += 0.1
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
         visualShapedId = p.createVisualShape(shapeType=p.GEOM_SPHERE,rgbaColor=rgbaColor,radius=0.001)
         particle_id_list = []
@@ -298,6 +298,7 @@ class UR5Robotiq85(RobotBase):
             particle_id_list.append(obj_id)
             p.changeVisualShape(obj_id,-1,rgbaColor = color_sign[seg_sign[i]])
         p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,1)
+        p.removeAllUserDebugItems()
         time.sleep(0.1)
         return particle_id_list
 
@@ -389,10 +390,9 @@ class UR5Robotiq85(RobotBase):
             seg_list.append(seg)
         return rgb_list,seg_list,m_r_list,m_t_list,intrinsic
 
-    def draw_line(self,pos1,pos2):
-        p.addUserDebugLine(pos1, pos2, [1, 0, 0], 2, 0)
-
-
+    def draw_line(self,begin,end,color=[1,0,0]):
+        p.addUserDebugLine(begin,end,color)
+        p.configureDebugVisualizer(p.COV_ENABLE_RENDERING, 1)
 
 
 
